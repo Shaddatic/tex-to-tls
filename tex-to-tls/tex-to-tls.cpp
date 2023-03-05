@@ -345,14 +345,6 @@ int wmain(int argc, wchar_t** argv)
 		EXIT("Error:\tCouldn't determine file type!", true);
 	}
 
-	wchar_t* ftp = &fn[wcslen(fn)];
-
-	while (true)
-	{
-		if (*(--ftp) == L'.')
-			break;
-	}
-
 	char* texname = GetTexname(fn);
 
 	if (!texname)
