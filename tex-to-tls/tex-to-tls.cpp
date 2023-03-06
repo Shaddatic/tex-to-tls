@@ -67,7 +67,7 @@ char* orcStringInString(char* str, const char* substr, int strsize)
 
 const char* voidcaststr = "";
 
-#define FPUTS_TEXNAME(F, NAME)		fprintf(F, "\tTEXN(%s\"%s\"),\n", voidcaststr, NAME)
+#define FPUTS_TEXNAME(F, NAME)		fprintf(F, "\tTEXN ( %s\"%s\" ),\n", voidcaststr, NAME)
 #define PRINT_TEXNAME(INDEX, NAME)	printf("Texture %i\t==\t\"%s\"\n", INDEX, NAME)
 
 int MakeTLS_PAK(FILE* f, char* fbuf, int fsize, bool names)
@@ -322,11 +322,11 @@ int wmain(int argc, wchar_t** argv)
 {
 	if (argc < 2)
 	{
-		PrintAndPause("Error:\tDrag a texture file (.pak, .prs, .pvm, .gvm, .pvmx, .xvm) onto this .exe to convert!");
+		PrintAndPause("Error:\tDrag & drop a texture file (.pak, .prs, .pvm, .gvm, .pvmx, .xvm) onto this .exe to convert!");
 		return 1;
 	}
 
-#define EXIT(PRINT, FBUF) if constexpr (FBUF) free(fbuf); PrintAndPause(PRINT); return 1;
+#define EXIT(PRINT, FBUF) { if constexpr (FBUF) free(fbuf); PrintAndPause(PRINT); return 1; }
 
 	wchar_t* fn = argv[1];
 
@@ -334,23 +334,17 @@ int wmain(int argc, wchar_t** argv)
 	int fsize = LoadEntireFile(fn, &fbuf);
 
 	if (!fbuf)
-	{
 		EXIT("Error:\tFile couldn't be loaded!", false);
-	}
 
 	int type = GetFileType(fbuf);
 
 	if (type == FT_ERR)
-	{
 		EXIT("Error:\tCouldn't determine file type!", true);
-	}
 
 	char* texname = GetTexname(fn);
 
 	if (!texname)
-	{
 		EXIT("Error:\tFile type found, but file extension not found!", true);
-	}
 
 	int rhead = wcslen(fn);
 
@@ -363,7 +357,7 @@ int wmain(int argc, wchar_t** argv)
 
 	static const char* typenames[] = { "ERR", "-- PAK Mode --", "-- PVM Mode (Texture name extraction not supported, try an uncompressed PVM) -- ", "-- Uncompressed PVM Mode --", "-- GVM Mode --", "-- PVMX Mode --", "-- XVM Mode (Texture name extraction not supported) -- " };
 
-	printf("\n%s\n\n0:\tNo texture names\n1:\tInclude texture names\n2:\tInclude texture names & cast to (void*)\n\n", typenames[type]);
+	printf("\n%s\n\n0:\tNo texture names\t(recommended)\n1:\tExtract texture names\n2:\tExtract texture names & add '(void*)'\n\n", typenames[type]);
 
 	int mode;
 
@@ -372,7 +366,7 @@ int wmain(int argc, wchar_t** argv)
 	if (mode == 2)
 		voidcaststr = "(void*)";
 
-	FILE* f = _wfopen(argv[1], L"w");
+	FILE* f = _wfopen(fn, L"w");
 
 	fprintf(f, "TEXTURE_START\n\nTEXTURENAME\ttexture_%s[]\nSTART\n", texname);
 
@@ -405,7 +399,7 @@ int wmain(int argc, wchar_t** argv)
 	{
 		for (auto i = 0; i < texnum; ++i)
 		{
-			fprintf(f, "\tTEXN(NULL),\n");
+			fprintf(f, "\tTEXN ( NULL ),\n");
 		}
 	}
 
